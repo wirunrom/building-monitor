@@ -4,7 +4,12 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment, PerspectiveCamera, Grid } from '@react-three/drei'
 import { Building } from './building-model'
 
-export function BuildingScene() {
+interface BuildingSceneProps {
+  onBuildingSelect: (id: number) => void
+  selectedBuilding: number | null
+}
+
+export function BuildingScene({ onBuildingSelect, selectedBuilding }: BuildingSceneProps) {
   return (
     <div className="w-full h-full">
       <Canvas shadows>
@@ -45,11 +50,40 @@ export function BuildingScene() {
         />
 
         {/* Buildings */}
-        <Building position={[0, 0, 0]} />
-        <Building position={[8, 0, 0]} scale={[0.8, 1.2, 0.8]} />
-        <Building position={[-8, 0, 2]} scale={[0.6, 0.9, 0.6]} />
-        <Building position={[4, 0, -6]} scale={[0.7, 1.4, 0.7]} />
-        <Building position={[-5, 0, -6]} scale={[0.9, 1.1, 0.9]} />
+        <Building 
+          id={0}
+          position={[0, 0, 0]} 
+          onSelect={onBuildingSelect}
+          isSelected={selectedBuilding === 0}
+        />
+        <Building 
+          id={1}
+          position={[8, 0, 0]} 
+          scale={[0.8, 1.2, 0.8]} 
+          onSelect={onBuildingSelect}
+          isSelected={selectedBuilding === 1}
+        />
+        <Building 
+          id={2}
+          position={[-8, 0, 2]} 
+          scale={[0.6, 0.9, 0.6]} 
+          onSelect={onBuildingSelect}
+          isSelected={selectedBuilding === 2}
+        />
+        <Building 
+          id={3}
+          position={[4, 0, -6]} 
+          scale={[0.7, 1.4, 0.7]} 
+          onSelect={onBuildingSelect}
+          isSelected={selectedBuilding === 3}
+        />
+        <Building 
+          id={4}
+          position={[-5, 0, -6]} 
+          scale={[0.9, 1.1, 0.9]} 
+          onSelect={onBuildingSelect}
+          isSelected={selectedBuilding === 4}
+        />
       </Canvas>
     </div>
   )

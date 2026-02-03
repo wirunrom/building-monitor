@@ -6,14 +6,22 @@ import { Box, Html } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface BuildingProps {
+  id: number
   position?: [number, number, number]
   scale?: [number, number, number]
+  onSelect: (id: number) => void
+  isSelected: boolean
 }
 
-export function Building({ position = [0, 0, 0], scale = [1, 1, 1] }: BuildingProps) {
+export function Building({ 
+  id,
+  position = [0, 0, 0], 
+  scale = [1, 1, 1],
+  onSelect,
+  isSelected
+}: BuildingProps) {
   const meshRef = useRef<THREE.Mesh>(null)
   const [hovered, setHovered] = useState(false)
-  const [clicked, setClicked] = useState(false)
 
   useFrame((state) => {
     if (meshRef.current && hovered) {
@@ -24,7 +32,11 @@ export function Building({ position = [0, 0, 0], scale = [1, 1, 1] }: BuildingPr
   })
 
   const baseHeight = 5 * scale[1]
-  const buildingColor = hovered ? '#60a5fa' : clicked ? '#3b82f6' : '#1e3a8a'
+  const buildingColor = hovered ? '#60a5fa' : isSelected ? '#3b82f6' : '#1e3a8a'
+
+  const handleClick = () => {
+    onSelect(isSelected ? -1 : id)
+  }
 
   return (
     <group position={position}>
@@ -37,7 +49,7 @@ export function Building({ position = [0, 0, 0], scale = [1, 1, 1] }: BuildingPr
         receiveShadow
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
-        onClick={() => setClicked(!clicked)}
+        onClick={handleClick}
       >
         <meshStandardMaterial 
           color={buildingColor}
@@ -62,9 +74,9 @@ export function Building({ position = [0, 0, 0], scale = [1, 1, 1] }: BuildingPr
               ]}
             >
               <meshStandardMaterial 
-                color={clicked ? '#fbbf24' : '#60a5fa'}
-                emissive={clicked ? '#fbbf24' : '#3b82f6'}
-                emissiveIntensity={clicked ? 0.8 : 0.5}
+                color={isSelected ? '#fbbf24' : '#60a5fa'}
+                emissive={isSelected ? '#fbbf24' : '#3b82f6'}
+                emissiveIntensity={isSelected ? 0.8 : 0.5}
               />
             </Box>
           ))}
@@ -85,14 +97,14 @@ export function Building({ position = [0, 0, 0], scale = [1, 1, 1] }: BuildingPr
       </Box>
 
       {/* Info Label */}
-      {clicked && (
+      {isSelected && (
         <Html position={[0, baseHeight + 1, 0]} center>
-          <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap">
-            <div className="font-semibold">Building Status</div>
+          <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap">
+            <div className="font-semibold">Building {id + 1}</div>
             <div className="text-muted-foreground text-xs mt-1">
               Height: {baseHeight.toFixed(1)}m
             </div>
-            <div className="text-xs text-green-500 mt-1">● Active</div>
+            <div className="text-xs text-green-500 mt-1">● Selected</div>
           </div>
         </Html>
       )}

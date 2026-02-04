@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "title": "ระบบตรวจสอบอาคาร - การจัดการโครงสร้างพื้นฐานแบบเรียลไทม์",
+    "description": "แดชบอร์ดตรวจสอบอาคารแบบ 3 มิติพร้อมการวิเคราะห์แบบเรียลไทม์"
+  },
+  "header": {
+    "title": "ระบบตรวจสอบอาคาร",
+    "subtitle": "การจัดการโครงสร้างพื้นฐานแบบเรียลไทม์"
+  },
+  "dashboard": {
+    "title": "แดชบอร์ดวิเคราะห์อาคาร",
+    "buildingAnalytics": "การวิเคราะห์อาคาร {building}",
+    "expandDashboard": "คลิกเพื่อขยายแดชบอร์ด",
+    "quickStats": {
+      "buildings": "อาคาร",
+      "allActive": "ทำงานปกติ",
+      "energy": "กิโลวัตต์"
+    },
+    "stats": {
+      "totalEnergy": "พลังงานรวม",
+      "occupancy": "อัตราการใช้งาน",
+      "temperature": "อุณหภูมิเฉลี่ย",
+      "systems": "ระบบที่ทำงาน",
+      "fromYesterday": "จากเมื่อวาน"
+    },
+    "building": {
+      "name": "อาคาร {number}",
+      "height": "ความสูง",
+      "floors": "ชั้น",
+      "status": "สถานะ",
+      "occupancy": "อัตราการใช้งาน",
+      "energy": "พลังงาน",
+      "temperature": "อุณหภูมิ",
+      "systems": "ระบบ",
+      "operational": "ทำงานปกติ",
+      "active": "ทำงาน",
+      "selected": "เลือกแล้ว"
+    },
+    "charts": {
+      "energyConsumption": "การใช้พลังงาน (24 ชม.)",
+      "buildingOccupancy": "อัตราการใช้งานอาคาร",
+      "avgTemperature": "อุณหภูมิเฉลี่ย (24 ชม.)",
+      "systemStatus": "สถานะระบบ",
+      "hvac": "ระบบปรับอากาศ",
+      "security": "ระบบรักษาความปลอดภัย",
+      "elevator": "ระบบลิฟต์",
+      "lighting": "ระบบแสงสว่าง",
+      "hours": "ชั่วโมง"
+    },
+    "time": {
+      "0h": "0 ชม.",
+      "4h": "4 ชม.",
+      "8h": "8 ชม.",
+      "12h": "12 ชม.",
+      "16h": "16 ชม.",
+      "20h": "20 ชม."
+    }
+  },
+  "theme": {
+    "light": "สว่าง",
+    "dark": "มืด",
+    "system": "ระบบ"
+  }
+}

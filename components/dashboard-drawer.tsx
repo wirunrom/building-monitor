@@ -23,10 +23,10 @@ export function DashboardDrawer({ selectedBuilding }: DashboardDrawerProps) {
         />
       )}
 
-      {/* Drawer - Always visible at 25vh */}
+      {/* Drawer - Always visible at 25vh, expands to 90vh */}
       <div
         className={`fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 transition-all duration-300 ease-in-out ${
-          isExpanded ? 'h-[70vh]' : 'h-[25vh]'
+          isExpanded ? 'h-[90vh]' : 'h-[25vh]'
         }`}
       >
         {/* Handle */}

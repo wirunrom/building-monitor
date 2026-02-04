@@ -159,7 +159,7 @@ const buildingDetails = [
 export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChartsProps) {
   const building = selectedBuilding !== null ? buildingDetails[selectedBuilding] : null
   return (
-    <div className="h-full overflow-x-auto overflow-y-auto p-4 md:p-6">
+    <div className={`h-full ${isExpanded ? 'overflow-y-auto' : 'overflow-x-auto overflow-y-hidden'} p-4 md:p-6`}>
       {/* Selected Building Info */}
       {building && (
         <Card className="p-4 mb-4 bg-primary/10 border-primary/30">
@@ -207,10 +207,10 @@ export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChart
         </Card>
       )}
 
-      {/* Stats Cards - Horizontal on desktop, vertical on mobile */}
-      <div className={`${isExpanded ? 'grid grid-cols-2 lg:grid-cols-4' : 'flex overflow-x-auto md:grid md:grid-cols-4'} gap-3 mb-4 pb-2`}>
+      {/* Stats Cards - Horizontal scroll when collapsed, grid when expanded */}
+      <div className={`${isExpanded ? 'grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4' : 'flex gap-3 mb-4'} ${!isExpanded && 'overflow-visible'}`}>
         {statsData.map((stat) => (
-          <Card key={stat.title} className={`p-3 ${!isExpanded ? 'flex-shrink-0 w-40 md:w-auto' : ''}`}>
+          <Card key={stat.title} className={`p-3 ${!isExpanded ? 'flex-shrink-0 w-[160px]' : ''}`}>
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-xs text-muted-foreground">{stat.title}</p>
@@ -225,14 +225,14 @@ export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChart
         ))}
       </div>
 
-      {/* Charts Grid - Horizontal scroll on desktop when not expanded, vertical on mobile */}
+      {/* Charts Grid - Horizontal scroll when collapsed, grid when expanded */}
       <div className={`${
         isExpanded 
           ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' 
-          : 'flex gap-4 overflow-x-auto md:grid md:grid-cols-2 lg:grid-cols-3 pb-2'
+          : 'flex gap-4'
       }`}>
         {/* Energy Consumption Chart */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-80 md:w-auto' : ''}`}>
+        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
           <h3 className="text-base font-semibold mb-3 text-card-foreground">Energy Consumption (24h)</h3>
           <ResponsiveContainer width="100%" height={isExpanded ? 300 : 200}>
             <AreaChart data={energyData}>
@@ -306,7 +306,7 @@ export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChart
         </Card>
 
         {/* Occupancy Chart */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-80 md:w-auto' : ''}`}>
+        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
           <h3 className="text-base font-semibold mb-3 text-card-foreground">Building Occupancy</h3>
           <ResponsiveContainer width="100%" height={isExpanded ? 300 : 200}>
             <BarChart data={occupancyData}>
@@ -335,7 +335,7 @@ export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChart
         </Card>
 
         {/* Temperature Chart */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-80 md:w-auto' : ''}`}>
+        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
           <h3 className="text-base font-semibold mb-3 text-card-foreground">Average Temperature (24h)</h3>
           <ResponsiveContainer width="100%" height={isExpanded ? 300 : 200}>
             <LineChart data={temperatureData}>
@@ -372,7 +372,7 @@ export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChart
         </Card>
 
         {/* Status Summary */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-80 md:w-auto' : ''}`}>
+        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
           <h3 className="text-base font-semibold mb-3 text-card-foreground">System Status</h3>
           <div className="space-y-4">
             {[

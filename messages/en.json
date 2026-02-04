@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "title": "Building Monitor - Real-time Infrastructure Management",
+    "description": "Interactive 3D building monitoring dashboard with real-time analytics"
+  },
+  "header": {
+    "title": "Building Monitor",
+    "subtitle": "Real-time Infrastructure Management"
+  },
+  "dashboard": {
+    "title": "Building Analytics Dashboard",
+    "buildingAnalytics": "Building {building} Analytics",
+    "expandDashboard": "Click to expand dashboard",
+    "quickStats": {
+      "buildings": "Buildings",
+      "allActive": "All Active",
+      "energy": "kW"
+    },
+    "stats": {
+      "totalEnergy": "Total Energy",
+      "occupancy": "Occupancy",
+      "temperature": "Avg Temperature",
+      "systems": "Active Systems",
+      "fromYesterday": "from yesterday"
+    },
+    "building": {
+      "name": "Building {number}",
+      "height": "Height",
+      "floors": "Floors",
+      "status": "Status",
+      "occupancy": "Occupancy",
+      "energy": "Energy",
+      "temperature": "Temperature",
+      "systems": "Systems",
+      "operational": "Operational",
+      "active": "Active",
+      "selected": "Selected"
+    },
+    "charts": {
+      "energyConsumption": "Energy Consumption (24h)",
+      "buildingOccupancy": "Building Occupancy",
+      "avgTemperature": "Average Temperature (24h)",
+      "systemStatus": "System Status",
+      "hvac": "HVAC System",
+      "security": "Security System",
+      "elevator": "Elevator System",
+      "lighting": "Lighting System",
+      "hours": "Hours"
+    },
+    "time": {
+      "0h": "0h",
+      "4h": "4h",
+      "8h": "8h",
+      "12h": "12h",
+      "16h": "16h",
+      "20h": "20h"
+    }
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  }
+}

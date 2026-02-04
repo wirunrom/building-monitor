@@ -1,42 +1,47 @@
-'use client'
+"use client";
 
-import { useRef, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
-import { Box, Html } from '@react-three/drei'
-import * as THREE from 'three'
+import { useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
+import { Box, Html } from "@react-three/drei";
+import * as THREE from "three";
 
 interface BuildingProps {
-  id: number
-  position?: [number, number, number]
-  scale?: [number, number, number]
-  onSelect: (id: number) => void
-  isSelected: boolean
+  id: number;
+  position?: [number, number, number];
+  scale?: [number, number, number];
+  onSelect: (id: number) => void;
+  isSelected: boolean;
 }
 
-export function Building({ 
+export default function Building({
   id,
-  position = [0, 0, 0], 
+  position = [0, 0, 0],
   scale = [1, 1, 1],
   onSelect,
-  isSelected
+  isSelected,
 }: BuildingProps) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const [hovered, setHovered] = useState(false)
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
 
   useFrame((state) => {
     if (meshRef.current && hovered) {
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.05
+      meshRef.current.position.y =
+        position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.05;
     } else if (meshRef.current) {
-      meshRef.current.position.y = position[1]
+      meshRef.current.position.y = position[1];
     }
-  })
+  });
 
-  const baseHeight = 5 * scale[1]
-  const buildingColor = hovered ? '#60a5fa' : isSelected ? '#3b82f6' : '#1e3a8a'
+  const baseHeight = 5 * scale[1];
+  const buildingColor = hovered
+    ? "#60a5fa"
+    : isSelected
+      ? "#3b82f6"
+      : "#1e3a8a";
 
   const handleClick = () => {
-    onSelect(isSelected ? -1 : id)
-  }
+    onSelect(isSelected ? -1 : id);
+  };
 
   return (
     <group position={position}>
@@ -51,11 +56,11 @@ export function Building({
         onPointerOut={() => setHovered(false)}
         onClick={handleClick}
       >
-        <meshStandardMaterial 
+        <meshStandardMaterial
           color={buildingColor}
           metalness={0.3}
           roughness={0.7}
-          emissive={hovered ? '#1e40af' : '#0f172a'}
+          emissive={hovered ? "#1e40af" : "#0f172a"}
           emissiveIntensity={hovered ? 0.3 : 0.1}
         />
       </Box>
@@ -70,12 +75,12 @@ export function Building({
               position={[
                 (col - 1) * 0.5 * scale[0],
                 floor + 0.5,
-                1.01 * scale[2]
+                1.01 * scale[2],
               ]}
             >
-              <meshStandardMaterial 
-                color={isSelected ? '#fbbf24' : '#60a5fa'}
-                emissive={isSelected ? '#fbbf24' : '#3b82f6'}
+              <meshStandardMaterial
+                color={isSelected ? "#fbbf24" : "#60a5fa"}
+                emissive={isSelected ? "#fbbf24" : "#3b82f6"}
                 emissiveIntensity={isSelected ? 0.8 : 0.5}
               />
             </Box>
@@ -89,11 +94,7 @@ export function Building({
         position={[0, baseHeight + 0.15, 0]}
         castShadow
       >
-        <meshStandardMaterial 
-          color="#0f172a"
-          metalness={0.8}
-          roughness={0.2}
-        />
+        <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
       </Box>
 
       {/* Info Label */}
@@ -109,5 +110,5 @@ export function Building({
         </Html>
       )}
     </group>
-  )
+  );
 }

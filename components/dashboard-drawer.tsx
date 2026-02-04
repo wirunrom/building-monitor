@@ -1,23 +1,23 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { ChevronUp, Activity, Building2, Zap, TrendingUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { DashboardCharts } from './dashboard-charts'
+import { useState } from "react";
+import { ChevronUp, Activity, Building2, Zap, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { DashboardCharts } from "./dashboard-charts";
 
 interface DashboardDrawerProps {
-  selectedBuilding: number | null
+  selectedBuilding: number | null;
 }
 
 export function DashboardDrawer({ selectedBuilding }: DashboardDrawerProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <>
       {/* Overlay for expanded state */}
       {isExpanded && (
-        <div 
+        <div
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
           onClick={() => setIsExpanded(false)}
         />
@@ -26,7 +26,7 @@ export function DashboardDrawer({ selectedBuilding }: DashboardDrawerProps) {
       {/* Drawer - Always visible at 25vh, expands to 90vh */}
       <div
         className={`fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 transition-all duration-300 ease-in-out ${
-          isExpanded ? 'h-[90vh]' : 'h-[25vh]'
+          isExpanded ? "h-[90vh]" : "h-[25vh]"
         }`}
       >
         {/* Handle */}
@@ -38,10 +38,14 @@ export function DashboardDrawer({ selectedBuilding }: DashboardDrawerProps) {
               onClick={() => setIsExpanded(!isExpanded)}
               className="hover:bg-accent"
             >
-              <ChevronUp className={`h-5 w-5 transition-transform ${isExpanded ? '' : 'rotate-180'}`} />
+              <ChevronUp
+                className={`h-5 w-5 transition-transform ${isExpanded ? "" : "rotate-180"}`}
+              />
             </Button>
             <h2 className="text-base md:text-lg font-semibold text-card-foreground">
-              {selectedBuilding !== null ? `Building ${selectedBuilding + 1} Analytics` : 'Building Analytics Dashboard'}
+              {selectedBuilding !== null
+                ? `Building ${selectedBuilding + 1} Analytics`
+                : "Building Analytics Dashboard"}
             </h2>
           </div>
 
@@ -64,9 +68,12 @@ export function DashboardDrawer({ selectedBuilding }: DashboardDrawerProps) {
 
         {/* Content */}
         <div className="h-[calc(100%-3.5rem)] overflow-hidden">
-          <DashboardCharts selectedBuilding={selectedBuilding} isExpanded={isExpanded} />
+          <DashboardCharts
+            selectedBuilding={selectedBuilding}
+            isExpanded={isExpanded}
+          />
         </div>
       </div>
     </>
-  )
+  );
 }

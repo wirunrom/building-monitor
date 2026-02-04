@@ -1,27 +1,42 @@
-'use client'
+"use client";
 
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Environment, PerspectiveCamera, Grid } from '@react-three/drei'
-import { Building } from './building-model'
+import { Canvas } from "@react-three/fiber";
+import {
+  OrbitControls,
+  Environment,
+  PerspectiveCamera,
+  Grid,
+} from "@react-three/drei";
+import dynamic from "next/dynamic";
 
 interface BuildingSceneProps {
-  onBuildingSelect: (id: number) => void
-  selectedBuilding: number | null
+  onBuildingSelect: (id: number) => void;
+  selectedBuilding: number | null;
 }
 
-export function BuildingScene({ onBuildingSelect, selectedBuilding }: BuildingSceneProps) {
+const BuildingModel = dynamic(() => import("./building-model"), { ssr: false });
+
+export function BuildingScene({
+  onBuildingSelect,
+  selectedBuilding,
+}: BuildingSceneProps) {
   return (
     <div className="w-full h-full">
-      <Canvas shadows>
+      <Canvas
+        shadows
+        frameloop="demand"
+        dpr={[1, 1.5]}
+        gl={{ antialias: false }}
+      >
         <PerspectiveCamera makeDefault position={[15, 12, 15]} fov={50} />
-        <OrbitControls 
-          enableDamping 
+        <OrbitControls
+          enableDamping
           dampingFactor={0.05}
           minDistance={5}
           maxDistance={50}
           maxPolarAngle={Math.PI / 2}
         />
-        
+
         {/* Lighting */}
         <ambientLight intensity={0.3} />
         <directionalLight
@@ -36,12 +51,12 @@ export function BuildingScene({ onBuildingSelect, selectedBuilding }: BuildingSc
           shadow-camera-top={20}
           shadow-camera-bottom={-20}
         />
-        <hemisphereLight intensity={0.5} groundColor="#1a1a2e" />
+        <hemisphereLight intensity={0.5} groundColor="#fff" />
 
         {/* Environment and Grid */}
         <Environment preset="night" />
-        <Grid 
-          args={[50, 50]} 
+        <Grid
+          args={[50, 50]}
           cellColor="#1e293b"
           sectionColor="#334155"
           fadeDistance={40}
@@ -50,41 +65,41 @@ export function BuildingScene({ onBuildingSelect, selectedBuilding }: BuildingSc
         />
 
         {/* Buildings */}
-        <Building 
+        <BuildingModel
           id={0}
-          position={[0, 0, 0]} 
+          position={[0, 0, 0]}
           onSelect={onBuildingSelect}
           isSelected={selectedBuilding === 0}
         />
-        <Building 
+        <BuildingModel
           id={1}
-          position={[8, 0, 0]} 
-          scale={[0.8, 1.2, 0.8]} 
+          position={[8, 0, 0]}
+          scale={[0.8, 1.2, 0.8]}
           onSelect={onBuildingSelect}
           isSelected={selectedBuilding === 1}
         />
-        <Building 
+        <BuildingModel
           id={2}
-          position={[-8, 0, 2]} 
-          scale={[0.6, 0.9, 0.6]} 
+          position={[-8, 0, 2]}
+          scale={[0.6, 0.9, 0.6]}
           onSelect={onBuildingSelect}
           isSelected={selectedBuilding === 2}
         />
-        <Building 
+        <BuildingModel
           id={3}
-          position={[4, 0, -6]} 
-          scale={[0.7, 1.4, 0.7]} 
+          position={[4, 0, -6]}
+          scale={[0.7, 1.4, 0.7]}
           onSelect={onBuildingSelect}
           isSelected={selectedBuilding === 3}
         />
-        <Building 
+        <BuildingModel
           id={4}
-          position={[-5, 0, -6]} 
-          scale={[0.9, 1.1, 0.9]} 
+          position={[-5, 0, -6]}
+          scale={[0.9, 1.1, 0.9]}
           onSelect={onBuildingSelect}
           isSelected={selectedBuilding === 4}
         />
       </Canvas>
     </div>
-  )
+  );
 }

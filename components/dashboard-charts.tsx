@@ -82,24 +82,13 @@ const statsData = [
   },
 ]
 
-// Compute colors from CSS variables
-const getChartColors = () => {
-  if (typeof window === 'undefined') return {
-    chart1: '#60a5fa',
-    chart2: '#3b82f6',
-    chart3: '#2563eb',
-    chart4: '#1d4ed8',
-    chart5: '#1e40af',
-  }
-  
-  const style = getComputedStyle(document.documentElement)
-  return {
-    chart1: style.getPropertyValue('--chart-1').trim() || '#60a5fa',
-    chart2: style.getPropertyValue('--chart-2').trim() || '#3b82f6',
-    chart3: style.getPropertyValue('--chart-3').trim() || '#2563eb',
-    chart4: style.getPropertyValue('--chart-4').trim() || '#1d4ed8',
-    chart5: style.getPropertyValue('--chart-5').trim() || '#1e40af',
-  }
+// Static chart colors - using hsl values to avoid hydration mismatch
+const chartColors = {
+  chart1: 'hsl(221.2 83.2% 53.3%)',
+  chart2: 'hsl(212 95% 68%)',
+  chart3: 'hsl(216 92% 60%)',
+  chart4: 'hsl(221 83% 53%)',
+  chart5: 'hsl(224 76% 48%)',
 }
 
 // Building details
@@ -164,7 +153,6 @@ const buildingDetails = [
 export function DashboardCharts() {
   const { selectedBuilding, isDrawerExpanded } = useBuildingStore()
   const building = selectedBuilding !== null ? buildingDetails[selectedBuilding] : null
-  const colors = getChartColors()
   
   return (
     <div className={`h-full p-4 md:p-6 ${isDrawerExpanded ? 'overflow-y-auto' : 'overflow-y-hidden'}`}>
@@ -268,13 +256,13 @@ export function DashboardCharts() {
             <h3 className="text-base font-semibold mb-3 text-card-foreground">Energy Consumption (24h)</h3>
             <ChartContainer
               config={{
-                building1: { label: 'Building 1', color: colors.chart1 },
-                building2: { label: 'Building 2', color: colors.chart2 },
-                building3: { label: 'Building 3', color: colors.chart3 },
-                building4: { label: 'Building 4', color: colors.chart4 },
-                building5: { label: 'Building 5', color: colors.chart5 },
+                building1: { label: 'Building 1', color: chartColors.chart1 },
+                building2: { label: 'Building 2', color: chartColors.chart2 },
+                building3: { label: 'Building 3', color: chartColors.chart3 },
+                building4: { label: 'Building 4', color: chartColors.chart4 },
+                building5: { label: 'Building 5', color: chartColors.chart5 },
               }}
-              className={isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}
+              className={`w-full ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
             >
               <AreaChart data={energyData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -338,9 +326,9 @@ export function DashboardCharts() {
             <h3 className="text-base font-semibold mb-3 text-card-foreground">Building Occupancy</h3>
             <ChartContainer
               config={{
-                occupancy: { label: 'Occupancy %', color: colors.chart1 },
+                occupancy: { label: 'Occupancy %', color: chartColors.chart1 },
               }}
-              className={isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}
+              className={`w-full ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
             >
               <BarChart data={occupancyData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -364,9 +352,9 @@ export function DashboardCharts() {
             <h3 className="text-base font-semibold mb-3 text-card-foreground">Average Temperature (24h)</h3>
             <ChartContainer
               config={{
-                temp: { label: 'Temperature (°C)', color: colors.chart3 },
+                temp: { label: 'Temperature (°C)', color: chartColors.chart3 },
               }}
-              className={isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}
+              className={`w-full ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
             >
               <LineChart data={temperatureData}>
                 <CartesianGrid strokeDasharray="3 3" />

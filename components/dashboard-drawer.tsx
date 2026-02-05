@@ -4,10 +4,11 @@ import { ChevronUp, Activity, Building2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardCharts } from "./dashboard-charts";
 import { useBuildingStore } from "@/lib/store";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 
 export function DashboardDrawer() {
-  const { selectedBuilding, isDrawerExpanded, toggleDrawer } = useBuildingStore();
+  const { selectedBuilding, isDrawerExpanded, toggleDrawer } =
+    useBuildingStore();
 
   return (
     <>

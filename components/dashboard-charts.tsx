@@ -1,7 +1,7 @@
 'use client'
 
 import { Card } from '@/components/ui/card'
-import { Activity, Zap, Thermometer, Building2, Users } from 'lucide-react'
+import { Activity, Zap, Thermometer, Building2, Users, TrendingUp } from 'lucide-react'
 import {
   Area,
   AreaChart,

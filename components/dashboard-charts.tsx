@@ -1,7 +1,7 @@
 'use client'
 
 import { Card } from '@/components/ui/card'
-import { TrendingUp, Activity, Zap, Thermometer, Building2, Users, Droplets } from 'lucide-react'
+import { Activity, Zap, Thermometer, Building2, Users, TrendingUp } from 'lucide-react'
 import {
   Area,
   AreaChart,
@@ -12,15 +12,11 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   Legend
 } from 'recharts'
-
-interface DashboardChartsProps {
-  selectedBuilding: number | null
-  isExpanded: boolean
-}
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { useBuildingStore } from '@/lib/store'
+import { motion } from 'framer-motion'
 
 // Sample data
 const energyData = [
@@ -86,15 +82,13 @@ const statsData = [
   },
 ]
 
-// Color computation for charts
-const colors = {
-  chart1: '#60a5fa',
-  chart2: '#3b82f6',
-  chart3: '#2563eb',
-  chart4: '#1d4ed8',
-  chart5: '#1e40af',
-  grid: '#1e293b',
-  text: '#94a3b8'
+// Static chart colors - using hsl values to avoid hydration mismatch
+const chartColors = {
+  chart1: 'hsl(221.2 83.2% 53.3%)',
+  chart2: 'hsl(212 95% 68%)',
+  chart3: 'hsl(216 92% 60%)',
+  chart4: 'hsl(221 83% 53%)',
+  chart5: 'hsl(224 76% 48%)',
 }
 
 // Building details
@@ -156,13 +150,20 @@ const buildingDetails = [
   },
 ]
 
-export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChartsProps) {
+export function DashboardCharts() {
+  const { selectedBuilding, isDrawerExpanded } = useBuildingStore()
   const building = selectedBuilding !== null ? buildingDetails[selectedBuilding] : null
+  
   return (
-    <div className={`h-full ${isExpanded ? 'overflow-y-auto' : 'overflow-x-auto overflow-y-hidden'} p-4 md:p-6`}>
+    <div className={`h-full p-4 md:p-6 ${isDrawerExpanded ? 'overflow-y-auto' : 'overflow-y-hidden'}`}>
       {/* Selected Building Info */}
       {building && (
-        <Card className="p-4 mb-4 bg-primary/10 border-primary/30">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card className="p-4 mb-4 bg-primary/10 border-primary/30">
           <div className="flex items-start justify-between mb-3">
             <div>
               <h3 className="text-lg font-semibold text-card-foreground flex items-center gap-2">
@@ -205,12 +206,24 @@ export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChart
             </div>
           </div>
         </Card>
+        </motion.div>
       )}
 
-      {/* Stats Cards - Horizontal scroll when collapsed, grid when expanded */}
-      <div className={`${isExpanded ? 'grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4' : 'flex gap-3 mb-4'} ${!isExpanded && 'overflow-visible'}`}>
-        {statsData.map((stat) => (
-          <Card key={stat.title} className={`p-3 ${!isExpanded ? 'flex-shrink-0 w-[160px]' : ''}`}>
+      {/* Stats Cards - Horizontal scroll when collapsed on large screens, grid when expanded */}
+      <div className={`mb-4 ${
+        isDrawerExpanded 
+          ? 'grid grid-cols-2 lg:grid-cols-4 gap-3' 
+          : 'hidden lg:flex lg:gap-3 lg:overflow-x-auto lg:pb-2'
+      }`}>
+        {statsData.map((stat, index) => (
+          <motion.div
+            key={stat.title}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.05, duration: 0.2 }}
+            className={!isDrawerExpanded ? 'flex-shrink-0' : ''}
+          >
+            <Card className={`p-3 ${!isDrawerExpanded ? 'w-[160px]' : ''}`}>
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-xs text-muted-foreground">{stat.title}</p>
@@ -222,177 +235,184 @@ export function DashboardCharts({ selectedBuilding, isExpanded }: DashboardChart
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </div>
           </Card>
+          </motion.div>
         ))}
       </div>
 
-      {/* Charts Grid - Horizontal scroll when collapsed, grid when expanded */}
+      {/* Charts Grid - Horizontal scroll when collapsed on large screens, grid when expanded */}
       <div className={`${
-        isExpanded 
+        isDrawerExpanded 
           ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' 
-          : 'flex gap-4'
+          : 'flex gap-4 overflow-x-auto lg:overflow-x-auto pb-2'
       }`}>
         {/* Energy Consumption Chart */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
-          <h3 className="text-base font-semibold mb-3 text-card-foreground">Energy Consumption (24h)</h3>
-          <ResponsiveContainer width="100%" height={isExpanded ? 300 : 200}>
-            <AreaChart data={energyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
-              <XAxis 
-                dataKey="time" 
-                stroke={colors.text}
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke={colors.text}
-                style={{ fontSize: '12px' }}
-                label={{ value: 'kW', angle: -90, position: 'insideLeft', fill: colors.text }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '0.5rem',
-                  color: 'hsl(var(--card-foreground))'
-                }}
-              />
-              <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="building1" 
-                stackId="1" 
-                stroke={colors.chart1} 
-                fill={colors.chart1} 
-                fillOpacity={0.6}
-                name="Building 1"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="building2" 
-                stackId="1" 
-                stroke={colors.chart2} 
-                fill={colors.chart2} 
-                fillOpacity={0.6}
-                name="Building 2"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="building3" 
-                stackId="1" 
-                stroke={colors.chart3} 
-                fill={colors.chart3} 
-                fillOpacity={0.6}
-                name="Building 3"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="building4" 
-                stackId="1" 
-                stroke={colors.chart4} 
-                fill={colors.chart4} 
-                fillOpacity={0.6}
-                name="Building 4"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="building5" 
-                stackId="1" 
-                stroke={colors.chart5} 
-                fill={colors.chart5} 
-                fillOpacity={0.6}
-                name="Building 5"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className={!isDrawerExpanded ? 'flex-shrink-0' : ''}
+        >
+          <Card className={`p-4 ${!isDrawerExpanded ? 'w-[320px] sm:w-[400px]' : ''}`}>
+            <h3 className="text-base font-semibold mb-3 text-card-foreground">Energy Consumption (24h)</h3>
+            <ChartContainer
+              config={{
+                building1: { label: 'Building 1', color: chartColors.chart1 },
+                building2: { label: 'Building 2', color: chartColors.chart2 },
+                building3: { label: 'Building 3', color: chartColors.chart3 },
+                building4: { label: 'Building 4', color: chartColors.chart4 },
+                building5: { label: 'Building 5', color: chartColors.chart5 },
+              }}
+              className={`w-full aspect-auto ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
+            >
+              <AreaChart data={energyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" style={{ fontSize: '11px' }} />
+                <YAxis style={{ fontSize: '11px' }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  dataKey="building1" 
+                  stackId="1" 
+                  stroke="var(--color-building1)" 
+                  fill="var(--color-building1)" 
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="building2" 
+                  stackId="1" 
+                  stroke="var(--color-building2)" 
+                  fill="var(--color-building2)" 
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="building3" 
+                  stackId="1" 
+                  stroke="var(--color-building3)" 
+                  fill="var(--color-building3)" 
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="building4" 
+                  stackId="1" 
+                  stroke="var(--color-building4)" 
+                  fill="var(--color-building4)" 
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="building5" 
+                  stackId="1" 
+                  stroke="var(--color-building5)" 
+                  fill="var(--color-building5)" 
+                  fillOpacity={0.6}
+                />
+              </AreaChart>
+            </ChartContainer>
+          </Card>
+        </motion.div>
 
         {/* Occupancy Chart */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
-          <h3 className="text-base font-semibold mb-3 text-card-foreground">Building Occupancy</h3>
-          <ResponsiveContainer width="100%" height={isExpanded ? 300 : 200}>
-            <BarChart data={occupancyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
-              <XAxis 
-                dataKey="building" 
-                stroke={colors.text}
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke={colors.text}
-                style={{ fontSize: '12px' }}
-                label={{ value: '%', angle: -90, position: 'insideLeft', fill: colors.text }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '0.5rem',
-                  color: 'hsl(var(--card-foreground))'
-                }}
-              />
-              <Bar dataKey="occupancy" fill={colors.chart1} radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className={!isDrawerExpanded ? 'flex-shrink-0' : ''}
+        >
+          <Card className={`p-4 ${!isDrawerExpanded ? 'w-[320px] sm:w-[400px]' : ''}`}>
+            <h3 className="text-base font-semibold mb-3 text-card-foreground">Building Occupancy</h3>
+            <ChartContainer
+              config={{
+                occupancy: { label: 'Occupancy %', color: chartColors.chart1 },
+              }}
+              className={`w-full aspect-auto ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
+            >
+              <BarChart data={occupancyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="building" style={{ fontSize: '10px' }} />
+                <YAxis style={{ fontSize: '11px' }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="occupancy" fill="var(--color-occupancy)" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ChartContainer>
+          </Card>
+        </motion.div>
 
         {/* Temperature Chart */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
-          <h3 className="text-base font-semibold mb-3 text-card-foreground">Average Temperature (24h)</h3>
-          <ResponsiveContainer width="100%" height={isExpanded ? 300 : 200}>
-            <LineChart data={temperatureData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
-              <XAxis 
-                dataKey="time" 
-                stroke={colors.text}
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke={colors.text}
-                style={{ fontSize: '12px' }}
-                domain={[20, 26]}
-                label={{ value: '°C', angle: -90, position: 'insideLeft', fill: colors.text }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '0.5rem',
-                  color: 'hsl(var(--card-foreground))'
-                }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="temp" 
-                stroke={colors.chart3} 
-                strokeWidth={3}
-                dot={{ fill: colors.chart3, r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className={!isDrawerExpanded ? 'flex-shrink-0' : ''}
+        >
+          <Card className={`p-4 ${!isDrawerExpanded ? 'w-[320px] sm:w-[400px]' : ''}`}>
+            <h3 className="text-base font-semibold mb-3 text-card-foreground">Average Temperature (24h)</h3>
+            <ChartContainer
+              config={{
+                temp: { label: 'Temperature (°C)', color: chartColors.chart3 },
+              }}
+              className={`w-full aspect-auto ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
+            >
+              <LineChart data={temperatureData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" style={{ fontSize: '11px' }} />
+                <YAxis domain={[20, 26]} style={{ fontSize: '11px' }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="temp" 
+                  stroke="var(--color-temp)" 
+                  strokeWidth={3}
+                  dot={{ fill: "var(--color-temp)", r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ChartContainer>
+          </Card>
+        </motion.div>
 
         {/* Status Summary */}
-        <Card className={`p-4 ${!isExpanded ? 'flex-shrink-0 w-[320px]' : ''}`}>
-          <h3 className="text-base font-semibold mb-3 text-card-foreground">System Status</h3>
-          <div className="space-y-4">
-            {[
-              { name: 'HVAC System', status: 'Operational', color: 'bg-green-500' },
-              { name: 'Security System', status: 'Active', color: 'bg-green-500' },
-              { name: 'Fire Safety', status: 'Operational', color: 'bg-green-500' },
-              { name: 'Elevator System', status: 'Maintenance', color: 'bg-yellow-500' },
-              { name: 'Power Grid', status: 'Operational', color: 'bg-green-500' },
-              { name: 'Water System', status: 'Operational', color: 'bg-green-500' },
-            ].map((system) => (
-              <div key={system.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm font-medium text-card-foreground">{system.name}</span>
-                <div className="flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full ${system.color}`} />
-                  <span className="text-sm text-muted-foreground">{system.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+          className={!isDrawerExpanded ? 'flex-shrink-0' : ''}
+        >
+          <Card className={`p-4 ${!isDrawerExpanded ? 'w-[320px] sm:w-[400px]' : ''}`}>
+            <h3 className="text-base font-semibold mb-3 text-card-foreground">System Status</h3>
+            <div className="space-y-3">
+              {[
+                { name: 'HVAC System', status: 'Operational', color: 'bg-green-500' },
+                { name: 'Security System', status: 'Active', color: 'bg-green-500' },
+                { name: 'Fire Safety', status: 'Operational', color: 'bg-green-500' },
+                { name: 'Elevator System', status: 'Maintenance', color: 'bg-yellow-500' },
+                { name: 'Power Grid', status: 'Operational', color: 'bg-green-500' },
+                { name: 'Water System', status: 'Operational', color: 'bg-green-500' },
+              ].map((system, index) => (
+                <motion.div
+                  key={system.name}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.05 }}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                >
+                  <span className="text-sm font-medium text-card-foreground">{system.name}</span>
+                  <div className="flex items-center gap-2">
+                    <motion.div 
+                      className={`h-2 w-2 rounded-full ${system.color}`}
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <span className="text-sm text-muted-foreground">{system.status}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </Card>
+        </motion.div>
       </div>
     </div>
   )

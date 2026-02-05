@@ -21,12 +21,13 @@ export function BuildingScene({
   selectedBuilding,
 }: BuildingSceneProps) {
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative z-0">
       <Canvas
         shadows
         frameloop="demand"
         dpr={[1, 1.5]}
         gl={{ antialias: false }}
+        style={{ position: 'relative', zIndex: 0 }}
       >
         <PerspectiveCamera makeDefault position={[15, 12, 15]} fov={50} />
         <OrbitControls

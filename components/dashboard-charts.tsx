@@ -262,7 +262,7 @@ export function DashboardCharts() {
                 building4: { label: 'Building 4', color: chartColors.chart4 },
                 building5: { label: 'Building 5', color: chartColors.chart5 },
               }}
-              className={`w-full ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
+              className={`w-full aspect-auto ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
             >
               <AreaChart data={energyData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -328,7 +328,7 @@ export function DashboardCharts() {
               config={{
                 occupancy: { label: 'Occupancy %', color: chartColors.chart1 },
               }}
-              className={`w-full ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
+              className={`w-full aspect-auto ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
             >
               <BarChart data={occupancyData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -354,7 +354,7 @@ export function DashboardCharts() {
               config={{
                 temp: { label: 'Temperature (°C)', color: chartColors.chart3 },
               }}
-              className={`w-full ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
+              className={`w-full aspect-auto ${isDrawerExpanded ? 'h-[300px]' : 'h-[180px]'}`}
             >
               <LineChart data={temperatureData}>
                 <CartesianGrid strokeDasharray="3 3" />

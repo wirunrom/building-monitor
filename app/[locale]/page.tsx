@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { BuildingScene } from '@/components/building-scene'
 import { DashboardDrawer } from '@/components/dashboard-drawer'
 import { Header } from '@/components/header'
+import { useBuildingStore } from '@/lib/store'
 
 export default function Page() {
-  const [selectedBuilding, setSelectedBuilding] = useState<number | null>(null)
+  const { selectedBuilding, setSelectedBuilding } = useBuildingStore()
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-background">
@@ -14,7 +14,7 @@ export default function Page() {
       <main className="h-full w-full pt-16 pb-[25vh]">
         <BuildingScene onBuildingSelect={setSelectedBuilding} selectedBuilding={selectedBuilding} />
       </main>
-      <DashboardDrawer selectedBuilding={selectedBuilding} />
+      <DashboardDrawer />
     </div>
   )
 }

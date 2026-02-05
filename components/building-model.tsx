@@ -24,11 +24,15 @@ export default function Building({
   const [hovered, setHovered] = useState(false);
 
   useFrame((state) => {
-    if (meshRef.current && hovered) {
-      meshRef.current.position.y =
-        position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.05;
-    } else if (meshRef.current) {
-      meshRef.current.position.y = position[1];
+    if (meshRef.current) {
+      if (hovered || isSelected) {
+        meshRef.current.position.y =
+          position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.08;
+      } else {
+        // Smooth transition back to original position
+        const target = position[1];
+        meshRef.current.position.y += (target - meshRef.current.position.y) * 0.1;
+      }
     }
   });
 
@@ -97,10 +101,10 @@ export default function Building({
         <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
       </Box>
 
-      {/* Info Label */}
+      {/* Info Label - Lower z-index than dashboard */}
       {isSelected && (
-        <Html position={[0, baseHeight + 1, 0]} center>
-          <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap">
+        <Html position={[0, baseHeight + 1, 0]} center zIndexRange={[0, 50]}>
+          <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap z-10">
             <div className="font-semibold">Building {id + 1}</div>
             <div className="text-muted-foreground text-xs mt-1">
               Height: {baseHeight.toFixed(1)}m

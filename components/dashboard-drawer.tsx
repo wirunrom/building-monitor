@@ -20,7 +20,7 @@ export function DashboardDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-100"
             onClick={toggleDrawer}
           />
         )}
@@ -31,7 +31,7 @@ export function DashboardDrawer() {
         initial={false}
         animate={{ height: isDrawerExpanded ? "90vh" : "25vh" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-[200]"
+        className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-200"
       >
         {/* Handle */}
         <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-border">

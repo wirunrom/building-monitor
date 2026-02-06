@@ -289,7 +289,7 @@ export function DashboardCharts() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05, duration: 0.2 }}
-            className={!isDrawerExpanded ? "flex-shrink-0" : ""}
+            className={!isDrawerExpanded ? "shrink-0" : ""}
           >
             <Card className={`p-3 ${!isDrawerExpanded ? "w-[160px]" : ""}`}>
               <div className="flex items-start justify-between">
@@ -324,7 +324,7 @@ export function DashboardCharts() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
-          className={!isDrawerExpanded ? "flex-shrink-0" : ""}
+          className={!isDrawerExpanded ? "shrink-0" : ""}
         >
           <Card
             className={`p-4 ${!isDrawerExpanded ? "w-[320px] sm:w-[400px]" : ""}`}
@@ -398,7 +398,7 @@ export function DashboardCharts() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className={!isDrawerExpanded ? "flex-shrink-0" : ""}
+          className={!isDrawerExpanded ? "shrink-0" : ""}
         >
           <Card
             className={`p-4 ${!isDrawerExpanded ? "w-[320px] sm:w-[400px]" : ""}`}
@@ -432,7 +432,7 @@ export function DashboardCharts() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
-          className={!isDrawerExpanded ? "flex-shrink-0" : ""}
+          className={!isDrawerExpanded ? "shrink-0" : ""}
         >
           <Card
             className={`p-4 ${!isDrawerExpanded ? "w-[320px] sm:w-[400px]" : ""}`}
@@ -469,7 +469,7 @@ export function DashboardCharts() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className={!isDrawerExpanded ? "flex-shrink-0" : ""}
+          className={!isDrawerExpanded ? "shrink-0" : ""}
         >
           <Card
             className={`p-4 ${!isDrawerExpanded ? "w-[320px] sm:w-[400px]" : ""}`}

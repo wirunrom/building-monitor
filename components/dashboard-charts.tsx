@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Activity,
   Zap,
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/chart";
 import { useBuildingStore } from "@/lib/store";
 import { motion } from "motion/react";
+import { buildings } from "@/lib/buildings-data";
 
 // Sample data
 const energyData = [
@@ -35,66 +37,42 @@ const energyData = [
     time: "00:00",
     building1: 45,
     building2: 38,
-    building3: 42,
-    building4: 35,
-    building5: 40,
   },
   {
     time: "04:00",
     building1: 42,
     building2: 35,
-    building3: 38,
-    building4: 32,
-    building5: 37,
   },
   {
     time: "08:00",
     building1: 65,
     building2: 58,
-    building3: 62,
-    building4: 55,
-    building5: 60,
   },
   {
     time: "12:00",
     building1: 75,
     building2: 68,
-    building3: 72,
-    building4: 65,
-    building5: 70,
   },
   {
     time: "16:00",
     building1: 82,
     building2: 75,
-    building3: 78,
-    building4: 72,
-    building5: 77,
   },
   {
     time: "20:00",
     building1: 58,
     building2: 52,
-    building3: 55,
-    building4: 48,
-    building5: 53,
   },
   {
     time: "24:00",
     building1: 48,
     building2: 42,
-    building3: 45,
-    building4: 38,
-    building5: 43,
   },
 ];
 
 const occupancyData = [
-  { building: "Building 1", occupancy: 85, capacity: 100 },
-  { building: "Building 2", occupancy: 72, capacity: 100 },
-  { building: "Building 3", occupancy: 91, capacity: 100 },
-  { building: "Building 4", occupancy: 68, capacity: 100 },
-  { building: "Building 5", occupancy: 78, capacity: 100 },
+  { building: "Building A", occupancy: 82, capacity: 100 },
+  { building: "Building B", occupancy: 76, capacity: 100 },
 ];
 
 const temperatureData = [
@@ -151,69 +129,19 @@ const chartColors = {
   chart5: "hsl(224 76% 48%)",
 };
 
-// Building details
-const buildingDetails = [
-  {
-    id: 0,
-    name: "Building 1",
-    height: "5.0m",
-    floors: 5,
-    occupancy: 85,
-    energy: 75,
-    temp: 23.5,
-    status: "Operational",
-    systems: { hvac: "Active", security: "Active", elevator: "Active" },
-  },
-  {
-    id: 1,
-    name: "Building 2",
-    height: "6.0m",
-    floors: 6,
-    occupancy: 72,
-    energy: 68,
-    temp: 24.1,
-    status: "Operational",
-    systems: { hvac: "Active", security: "Active", elevator: "Maintenance" },
-  },
-  {
-    id: 2,
-    name: "Building 3",
-    height: "4.5m",
-    floors: 5,
-    occupancy: 91,
-    energy: 72,
-    temp: 22.8,
-    status: "Operational",
-    systems: { hvac: "Active", security: "Active", elevator: "Active" },
-  },
-  {
-    id: 3,
-    name: "Building 4",
-    height: "7.0m",
-    floors: 7,
-    occupancy: 68,
-    energy: 65,
-    temp: 23.9,
-    status: "Operational",
-    systems: { hvac: "Active", security: "Active", elevator: "Active" },
-  },
-  {
-    id: 4,
-    name: "Building 5",
-    height: "5.5m",
-    floors: 6,
-    occupancy: 78,
-    energy: 70,
-    temp: 23.2,
-    status: "Operational",
-    systems: { hvac: "Active", security: "Active", elevator: "Active" },
-  },
-];
-
 export function DashboardCharts() {
-  const { selectedBuilding, isDrawerExpanded } = useBuildingStore();
+  const {
+    selectedBuilding,
+    isDrawerExpanded,
+    selectedFloorByBuilding,
+    setSelectedFloor,
+  } = useBuildingStore();
   const building =
-    selectedBuilding !== null ? buildingDetails[selectedBuilding] : null;
+    selectedBuilding !== null ? buildings[selectedBuilding] : null;
+  const selectedFloor =
+    selectedBuilding !== null
+      ? selectedFloorByBuilding[selectedBuilding] ?? null
+      : null;
 
   return (
     <div
@@ -270,6 +198,41 @@ export function DashboardCharts() {
                   </p>
                 </div>
               </div>
+            </div>
+          </Card>
+          <Card className="p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4 className="text-sm font-semibold text-card-foreground">
+                  Floor Selection
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Select a floor to inspect sensors and occupancy.
+                </p>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {selectedFloor !== null
+                  ? `Floor ${selectedFloor + 1}`
+                  : "No floor selected"}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+              {Array.from({ length: building.floors }).map((_, floor) => {
+                const isActive = selectedFloor === floor;
+                return (
+                  <Button
+                    key={floor}
+                    variant={isActive ? "default" : "outline"}
+                    size="sm"
+                    onClick={() =>
+                      setSelectedFloor(building.id, isActive ? null : floor)
+                    }
+                    className="text-xs"
+                  >
+                    {floor + 1}
+                  </Button>
+                );
+              })}
             </div>
           </Card>
         </motion.div>
@@ -334,11 +297,8 @@ export function DashboardCharts() {
             </h3>
             <ChartContainer
               config={{
-                building1: { label: "Building 1", color: chartColors.chart1 },
-                building2: { label: "Building 2", color: chartColors.chart2 },
-                building3: { label: "Building 3", color: chartColors.chart3 },
-                building4: { label: "Building 4", color: chartColors.chart4 },
-                building5: { label: "Building 5", color: chartColors.chart5 },
+                building1: { label: "Building A", color: chartColors.chart1 },
+                building2: { label: "Building B", color: chartColors.chart2 },
               }}
               className={`w-full aspect-auto ${isDrawerExpanded ? "h-[300px]" : "h-[180px]"}`}
             >
@@ -362,30 +322,6 @@ export function DashboardCharts() {
                   stackId="1"
                   stroke="var(--color-building2)"
                   fill="var(--color-building2)"
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="building3"
-                  stackId="1"
-                  stroke="var(--color-building3)"
-                  fill="var(--color-building3)"
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="building4"
-                  stackId="1"
-                  stroke="var(--color-building4)"
-                  fill="var(--color-building4)"
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="building5"
-                  stackId="1"
-                  stroke="var(--color-building5)"
-                  fill="var(--color-building5)"
                   fillOpacity={0.6}
                 />
               </AreaChart>

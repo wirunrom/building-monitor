@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardCharts } from "./dashboard-charts";
 import { useBuildingStore } from "@/lib/store";
 import { AnimatePresence, motion } from "motion/react";
+import { buildings } from "@/lib/buildings-data";
 
 export function DashboardDrawer() {
   const { selectedBuilding, isDrawerExpanded, toggleDrawer } =
@@ -54,7 +55,7 @@ export function DashboardDrawer() {
               className="text-base md:text-lg font-semibold text-card-foreground"
             >
               {selectedBuilding !== null
-                ? `Building ${selectedBuilding + 1} Analytics`
+                ? `${buildings[selectedBuilding]?.name ?? "Building"} Analytics`
                 : "Building Analytics Dashboard"}
             </motion.h2>
           </div>
@@ -68,7 +69,7 @@ export function DashboardDrawer() {
           >
             <div className="flex items-center gap-2 text-sm">
               <Building2 className="h-4 w-4 text-primary" />
-              <span className="text-muted-foreground">5 Buildings</span>
+              <span className="text-muted-foreground">2 Buildings</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Activity className="h-4 w-4 text-green-500" />

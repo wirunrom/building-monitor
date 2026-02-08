@@ -8,17 +8,22 @@ import {
   Grid,
 } from "@react-three/drei";
 import dynamic from "next/dynamic";
+import { buildings } from "@/lib/buildings-data";
 
 interface BuildingSceneProps {
-  onBuildingSelect: (id: number) => void;
+  onBuildingSelect: (id: number | null) => void;
+  onFloorSelect: (buildingId: number, floor: number | null) => void;
   selectedBuilding: number | null;
+  selectedFloorByBuilding: Record<number, number | null>;
 }
 
 const BuildingModel = dynamic(() => import("./building-model"), { ssr: false });
 
 export function BuildingScene({
   onBuildingSelect,
+  onFloorSelect,
   selectedBuilding,
+  selectedFloorByBuilding,
 }: BuildingSceneProps) {
   return (
     <div className="w-full h-full relative z-0">
@@ -67,38 +72,24 @@ export function BuildingScene({
 
         {/* Buildings */}
         <BuildingModel
-          id={0}
-          position={[0, 0, 0]}
+          id={buildings[0].id}
+          floors={buildings[0].floors}
+          position={[-4, 0, 0]}
+          scale={[1, 1.1, 1]}
           onSelect={onBuildingSelect}
-          isSelected={selectedBuilding === 0}
+          onFloorSelect={onFloorSelect}
+          selectedFloor={selectedFloorByBuilding[buildings[0].id] ?? null}
+          isSelected={selectedBuilding === buildings[0].id}
         />
         <BuildingModel
-          id={1}
-          position={[8, 0, 0]}
-          scale={[0.8, 1.2, 0.8]}
+          id={buildings[1].id}
+          floors={buildings[1].floors}
+          position={[4.5, 0, -1]}
+          scale={[0.9, 1.3, 0.9]}
           onSelect={onBuildingSelect}
-          isSelected={selectedBuilding === 1}
-        />
-        <BuildingModel
-          id={2}
-          position={[-8, 0, 2]}
-          scale={[0.6, 0.9, 0.6]}
-          onSelect={onBuildingSelect}
-          isSelected={selectedBuilding === 2}
-        />
-        <BuildingModel
-          id={3}
-          position={[4, 0, -6]}
-          scale={[0.7, 1.4, 0.7]}
-          onSelect={onBuildingSelect}
-          isSelected={selectedBuilding === 3}
-        />
-        <BuildingModel
-          id={4}
-          position={[-5, 0, -6]}
-          scale={[0.9, 1.1, 0.9]}
-          onSelect={onBuildingSelect}
-          isSelected={selectedBuilding === 4}
+          onFloorSelect={onFloorSelect}
+          selectedFloor={selectedFloorByBuilding[buildings[1].id] ?? null}
+          isSelected={selectedBuilding === buildings[1].id}
         />
       </Canvas>
     </div>

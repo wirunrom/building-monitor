@@ -4,9 +4,10 @@ Command: npx gltfjsx@6.5.3 ./public/en001.glb -t -k -E -R -f
 */
 
 import * as THREE from "three";
-import React, { JSX } from "react";
+import React, { JSX, useLayoutEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
+import { Html } from "@react-three/drei";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -177,15 +178,196 @@ type GLTFResult = GLTF & {
   };
 };
 
-export default function Model(props: JSX.IntrinsicElements["group"]) {
+type FloorState = "selected" | "hovered" | "idle";
+
+type En001Props = JSX.IntrinsicElements["group"] & {
+  selectedFloor: number | null;
+  hoveredFloor: number | null;
+  onFloorHover: (floor: number | null) => void;
+  onFloorSelect: (floor: number) => void;
+  onFloorFocus: (position: THREE.Vector3, offset: THREE.Vector3) => void;
+  onBuildingSelect: () => void;
+  focusFloorIndex?: number | null;
+  focusRequestId?: number;
+  focusOffset: THREE.Vector3;
+  floorInfo?: Array<{
+    name: string;
+    occupancy: number;
+    temp: number;
+    power: number;
+    alerts: number;
+  }>;
+};
+
+export default function Model({
+  selectedFloor,
+  hoveredFloor,
+  onFloorHover,
+  onFloorSelect,
+  onFloorFocus,
+  onBuildingSelect,
+  focusFloorIndex = null,
+  focusRequestId = 0,
+  focusOffset,
+  floorInfo = [],
+  ...props
+}: En001Props) {
+  const rootRef = useRef<THREE.Group>(null);
   const { nodes, materials } = useGLTF("/en001.glb") as unknown as GLTFResult;
+  const floor01Ref = useRef<THREE.Group>(null);
+  const floor02Ref = useRef<THREE.Group>(null);
+  const floor03Ref = useRef<THREE.Group>(null);
+  const floor04Ref = useRef<THREE.Group>(null);
+  const floorRfRef = useRef<THREE.Group>(null);
+
+  const floorGroups = useMemo(
+    () => [floor01Ref, floor02Ref, floor03Ref, floor04Ref, floorRfRef],
+    [],
+  );
+
+  useLayoutEffect(() => {
+    floorGroups.forEach((groupRef) => {
+      const group = groupRef.current;
+      if (!group) return;
+      group.traverse((child) => {
+        if (!(child instanceof THREE.Mesh)) return;
+        const materialsToClone = Array.isArray(child.material)
+          ? child.material
+          : [child.material];
+        const cloned = materialsToClone.map((material) => {
+          const baseMaterial = material as THREE.MeshStandardMaterial;
+          const next = baseMaterial.clone();
+          next.userData.__baseColor = baseMaterial.color?.clone?.();
+          next.userData.__baseEmissive =
+            baseMaterial.emissive?.clone?.() ?? new THREE.Color(0, 0, 0);
+          next.userData.__baseEmissiveIntensity =
+            baseMaterial.emissiveIntensity ?? 0;
+          next.userData.__baseOpacity = baseMaterial.opacity ?? 1;
+          next.userData.__baseTransparent = baseMaterial.transparent ?? false;
+          return next;
+        });
+        child.material = Array.isArray(child.material) ? cloned : cloned[0];
+      });
+    });
+  }, [floorGroups]);
+
+  useLayoutEffect(() => {
+    const selectedColor = new THREE.Color("#fbbf24");
+    const hoveredColor = new THREE.Color("#7dd3fc");
+    const dimOthers = selectedFloor !== null;
+
+    const applyState = (group: THREE.Group | null, state: FloorState) => {
+      if (!group) return;
+      group.traverse((child) => {
+        if (!(child instanceof THREE.Mesh)) return;
+        const mats = Array.isArray(child.material)
+          ? child.material
+          : [child.material];
+        mats.forEach((material) => {
+          const mat = material as THREE.MeshStandardMaterial;
+          const baseEmissive =
+            (mat.userData.__baseEmissive as THREE.Color) ??
+            new THREE.Color(0, 0, 0);
+          const baseEmissiveIntensity =
+            (mat.userData.__baseEmissiveIntensity as number) ?? 0;
+          const baseOpacity = (mat.userData.__baseOpacity as number) ?? 1;
+          const baseTransparent =
+            (mat.userData.__baseTransparent as boolean) ?? false;
+
+          if (state === "selected") {
+            mat.emissive.copy(selectedColor);
+            mat.emissiveIntensity = Math.max(0.4, baseEmissiveIntensity + 0.4);
+          } else if (state === "hovered") {
+            mat.emissive.copy(hoveredColor);
+            mat.emissiveIntensity = Math.max(
+              0.25,
+              baseEmissiveIntensity + 0.25,
+            );
+          } else {
+            mat.emissive.copy(baseEmissive);
+            mat.emissiveIntensity = baseEmissiveIntensity;
+          }
+
+          if (dimOthers && state === "idle") {
+            mat.transparent = true;
+            mat.opacity = 0.35;
+          } else {
+            mat.transparent = baseTransparent;
+            mat.opacity = baseOpacity;
+          }
+          mat.needsUpdate = true;
+        });
+      });
+    };
+
+    floorGroups.forEach((groupRef, index) => {
+      const group = groupRef.current;
+      const state: FloorState =
+        selectedFloor === index
+          ? "selected"
+          : hoveredFloor === index
+            ? "hovered"
+            : "idle";
+      applyState(group, state);
+    });
+  }, [floorGroups, hoveredFloor, selectedFloor]);
+
+  useLayoutEffect(() => {
+    if (focusFloorIndex === null) return;
+    const groupRef = floorGroups[focusFloorIndex];
+    const group = groupRef?.current;
+    if (!group) return;
+    const position = new THREE.Vector3();
+    group.getWorldPosition(position);
+    const offset = focusOffset.clone();
+    if (rootRef.current) {
+      const rotation = new THREE.Quaternion();
+      rootRef.current.getWorldQuaternion(rotation);
+      offset.applyQuaternion(rotation);
+    }
+    onFloorFocus(position, offset);
+  }, [focusFloorIndex, focusRequestId, floorGroups, onFloorFocus, focusOffset]);
+
   return (
-    <group {...props} dispose={null}>
+    <group
+      ref={rootRef}
+      {...props}
+      dispose={null}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+        onBuildingSelect();
+      }}
+    >
       <group
         name="EN00101"
+        ref={floor01Ref}
         position={[-1.048, 1.989, 0.37]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={0.3}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          onFloorHover(0);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          onFloorHover(null);
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          const isSame = selectedFloor === 0;
+          onFloorSelect(0);
+          if (!isSame && floor01Ref.current) {
+            const position = new THREE.Vector3();
+            floor01Ref.current.getWorldPosition(position);
+            const offset = focusOffset.clone();
+            if (rootRef.current) {
+              const rotation = new THREE.Quaternion();
+              rootRef.current.getWorldQuaternion(rotation);
+              offset.applyQuaternion(rotation);
+            }
+            onFloorFocus(position, offset);
+          }
+        }}
       >
         <mesh
           name="900mm"
@@ -267,12 +449,54 @@ export default function Model(props: JSX.IntrinsicElements["group"]) {
           geometry={nodes["900mm_15"].geometry}
           material={materials["Metal Sheet"]}
         />
+        {selectedFloor === 0 && (
+          <Html position={[0, 0.6, 0]} center>
+            <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap z-10">
+              <div className="font-semibold">
+                {floorInfo[0]?.name ?? "Floor 1"}
+              </div>
+              <div className="text-muted-foreground mt-1">
+                Occ: {floorInfo[0]?.occupancy ?? 0}% • Temp:{" "}
+                {floorInfo[0]?.temp ?? 0}°C
+              </div>
+              <div className="text-muted-foreground">
+                Power: {floorInfo[0]?.power ?? 0} kW • Alerts:{" "}
+                {floorInfo[0]?.alerts ?? 0}
+              </div>
+            </div>
+          </Html>
+        )}
       </group>
       <group
         name="EN00102"
+        ref={floor02Ref}
         position={[-0.486, 5.831, -1.125]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={0.3}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          onFloorHover(1);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          onFloorHover(null);
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          const isSame = selectedFloor === 1;
+          onFloorSelect(1);
+          if (!isSame && floor02Ref.current) {
+            const position = new THREE.Vector3();
+            floor02Ref.current.getWorldPosition(position);
+            const offset = focusOffset.clone();
+            if (rootRef.current) {
+              const rotation = new THREE.Quaternion();
+              rootRef.current.getWorldQuaternion(rotation);
+              offset.applyQuaternion(rotation);
+            }
+            onFloorFocus(position, offset);
+          }
+        }}
       >
         <mesh
           name="900mm001"
@@ -354,12 +578,54 @@ export default function Model(props: JSX.IntrinsicElements["group"]) {
           geometry={nodes["900mm001_15"].geometry}
           material={materials["Mirror 26BF207"]}
         />
+        {selectedFloor === 1 && (
+          <Html position={[0, 0.6, 0]} center>
+            <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap z-10">
+              <div className="font-semibold">
+                {floorInfo[1]?.name ?? "Floor 2"}
+              </div>
+              <div className="text-muted-foreground mt-1">
+                Occ: {floorInfo[1]?.occupancy ?? 0}% • Temp:{" "}
+                {floorInfo[1]?.temp ?? 0}°C
+              </div>
+              <div className="text-muted-foreground">
+                Power: {floorInfo[1]?.power ?? 0} kW • Alerts:{" "}
+                {floorInfo[1]?.alerts ?? 0}
+              </div>
+            </div>
+          </Html>
+        )}
       </group>
       <group
         name="EN00103"
+        ref={floor03Ref}
         position={[-0.467, 9.43, -1.263]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={0.3}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          onFloorHover(2);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          onFloorHover(null);
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          const isSame = selectedFloor === 2;
+          onFloorSelect(2);
+          if (!isSame && floor03Ref.current) {
+            const position = new THREE.Vector3();
+            floor03Ref.current.getWorldPosition(position);
+            const offset = focusOffset.clone();
+            if (rootRef.current) {
+              const rotation = new THREE.Quaternion();
+              rootRef.current.getWorldQuaternion(rotation);
+              offset.applyQuaternion(rotation);
+            }
+            onFloorFocus(position, offset);
+          }
+        }}
       >
         <mesh
           name="900mm006"
@@ -441,12 +707,54 @@ export default function Model(props: JSX.IntrinsicElements["group"]) {
           geometry={nodes["900mm006_15"].geometry}
           material={materials["Mirror 26BF207.001"]}
         />
+        {selectedFloor === 2 && (
+          <Html position={[0, 0.6, 0]} center>
+            <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap z-10">
+              <div className="font-semibold">
+                {floorInfo[2]?.name ?? "Floor 3"}
+              </div>
+              <div className="text-muted-foreground mt-1">
+                Occ: {floorInfo[2]?.occupancy ?? 0}% • Temp:{" "}
+                {floorInfo[2]?.temp ?? 0}°C
+              </div>
+              <div className="text-muted-foreground">
+                Power: {floorInfo[2]?.power ?? 0} kW • Alerts:{" "}
+                {floorInfo[2]?.alerts ?? 0}
+              </div>
+            </div>
+          </Html>
+        )}
       </group>
       <group
         name="EN00104"
+        ref={floor04Ref}
         position={[-1.973, 13.376, 2.474]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={0.3}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          onFloorHover(3);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          onFloorHover(null);
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          const isSame = selectedFloor === 3;
+          onFloorSelect(3);
+          if (!isSame && floor04Ref.current) {
+            const position = new THREE.Vector3();
+            floor04Ref.current.getWorldPosition(position);
+            const offset = focusOffset.clone();
+            if (rootRef.current) {
+              const rotation = new THREE.Quaternion();
+              rootRef.current.getWorldQuaternion(rotation);
+              offset.applyQuaternion(rotation);
+            }
+            onFloorFocus(position, offset);
+          }
+        }}
       >
         <mesh
           name="8x2700"
@@ -543,12 +851,54 @@ export default function Model(props: JSX.IntrinsicElements["group"]) {
           geometry={nodes["8x2700_18"].geometry}
           material={materials["Mirror 26BF207.002"]}
         />
+        {selectedFloor === 3 && (
+          <Html position={[0, 0.6, 0]} center>
+            <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap z-10">
+              <div className="font-semibold">
+                {floorInfo[3]?.name ?? "Floor 4"}
+              </div>
+              <div className="text-muted-foreground mt-1">
+                Occ: {floorInfo[3]?.occupancy ?? 0}% • Temp:{" "}
+                {floorInfo[3]?.temp ?? 0}°C
+              </div>
+              <div className="text-muted-foreground">
+                Power: {floorInfo[3]?.power ?? 0} kW • Alerts:{" "}
+                {floorInfo[3]?.alerts ?? 0}
+              </div>
+            </div>
+          </Html>
+        )}
       </group>
       <group
         name="EN001RF"
+        ref={floorRfRef}
         position={[0.023, 17.637, 0.292]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={0.3}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          onFloorHover(4);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          onFloorHover(null);
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          const isSame = selectedFloor === 4;
+          onFloorSelect(4);
+          if (!isSame && floorRfRef.current) {
+            const position = new THREE.Vector3();
+            floorRfRef.current.getWorldPosition(position);
+            const offset = focusOffset.clone();
+            if (rootRef.current) {
+              const rotation = new THREE.Quaternion();
+              rootRef.current.getWorldQuaternion(rotation);
+              offset.applyQuaternion(rotation);
+            }
+            onFloorFocus(position, offset);
+          }
+        }}
       >
         <mesh
           name="เหล็กกล่อง_100*50*3134"
@@ -622,6 +972,23 @@ export default function Model(props: JSX.IntrinsicElements["group"]) {
           geometry={nodes["เหล็กกล่อง_100*50*3134_13"].geometry}
           material={materials["Acrylic Green.001"]}
         />
+        {selectedFloor === 4 && (
+          <Html position={[0, 0.6, 0]} center>
+            <div className="bg-card border border-primary rounded-lg px-3 py-2 shadow-lg text-card-foreground text-sm whitespace-nowrap z-10">
+              <div className="font-semibold">
+                {floorInfo[4]?.name ?? "Roof"}
+              </div>
+              <div className="text-muted-foreground mt-1">
+                Occ: {floorInfo[4]?.occupancy ?? 0}% • Temp:{" "}
+                {floorInfo[4]?.temp ?? 0}°C
+              </div>
+              <div className="text-muted-foreground">
+                Power: {floorInfo[4]?.power ?? 0} kW • Alerts:{" "}
+                {floorInfo[4]?.alerts ?? 0}
+              </div>
+            </div>
+          </Html>
+        )}
       </group>
     </group>
   );

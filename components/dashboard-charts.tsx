@@ -135,6 +135,7 @@ export function DashboardCharts() {
     isDrawerExpanded,
     selectedFloorByBuilding,
     setSelectedFloor,
+    requestFloorFocus,
   } = useBuildingStore();
   const building =
     selectedBuilding !== null ? buildings[selectedBuilding] : null;
@@ -219,17 +220,24 @@ export function DashboardCharts() {
             <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
               {Array.from({ length: building.floors }).map((_, floor) => {
                 const isActive = selectedFloor === floor;
+                const label = building.floorInfo?.[floor]?.name ?? `F${floor + 1}`;
                 return (
                   <Button
                     key={floor}
                     variant={isActive ? "default" : "outline"}
                     size="sm"
                     onClick={() =>
-                      setSelectedFloor(building.id, isActive ? null : floor)
+                      (() => {
+                        const nextFloor = isActive ? null : floor;
+                        setSelectedFloor(building.id, nextFloor);
+                        if (nextFloor !== null) {
+                          requestFloorFocus(building.id, nextFloor);
+                        }
+                      })()
                     }
                     className="text-xs"
                   >
-                    {floor + 1}
+                    {label}
                   </Button>
                 );
               })}
